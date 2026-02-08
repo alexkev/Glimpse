@@ -68,9 +68,6 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
   const [isErrorFlashing, setIsErrorFlashing] = useState(false);
   const [previewText, setPreviewText] = useState("");
 
-  // console.log('%c/var/folders/sr/7s37n67j00n1gtv1jd9mqrr80000gn/T/vibe-kanban/worktrees/e82b-create-a-live-pr/Glimpse/src/pill.tsx:71 previewText', 'color: #007acc;', previewText);
-  console.log('\x1b[44m%s\x1b[0m', 'Testing, Testing, Testing, Testing, One, Two, Three,Glimpse/src/pill.tsx:72 previewText', previewText);
-
   const getMaskOpacity = useCallback((x: number, y: number, width: number, height: number): number => {
     const radius = height / 2;
     const leftCenter = radius;
@@ -590,7 +587,6 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
   };
 
   return (
-    <>
     <div
       className={`relative w-full h-full flex flex-col justify-end select-none ${className} overflow-visible`}
       style={style}
@@ -599,9 +595,13 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
       <div className="sr-only" role="status" aria-live="polite">
         {getStatusMessage(status)}
       </div>
-      <div className="bg-surface-elevated/95 backdrop-blur-sm rounded-xl shadow-xl overflow-visible">
-        {previewText}
-      </div>
+      
+      {previewText && (
+        <div className="absolute bottom-[36px] left-1/2 -translate-x-1/2 px-3 py-2 bg-surface-elevated/95 backdrop-blur-sm rounded-xl shadow-xl text-content-primary text-xs font-medium text-center pointer-events-none transition-all duration-200 ease-out animate-in fade-in slide-in-from-bottom-2 z-50 w-max max-w-[160px] break-words whitespace-pre-wrap">
+          {previewText}
+        </div>
+      )}
+
       <div className="relative flex flex-col items-center pb-2">
         <div
           ref={containerRef}
@@ -621,7 +621,6 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
         </div>
       </div>
     </div>
-    </>
   );
 };
 
