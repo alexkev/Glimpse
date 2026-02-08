@@ -595,14 +595,12 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
       <div className="sr-only" role="status" aria-live="polite">
         {getStatusMessage(status)}
       </div>
-      
-      {previewText && (
-        <div className="absolute bottom-[36px] left-1/2 -translate-x-1/2 px-3 py-2 bg-surface-elevated/95 backdrop-blur-sm rounded-xl shadow-xl text-content-primary text-xs font-medium text-center pointer-events-none transition-all duration-200 ease-out animate-in fade-in slide-in-from-bottom-2 z-50 w-max max-w-[160px] break-words whitespace-pre-wrap">
-          {previewText}
-        </div>
-      )}
-
       <div className="relative flex flex-col items-center pb-2">
+        {previewText && (
+          <div className="text-center text-xs font-mono bg-black/70 text-white px-2 py-0.5 rounded mb-1 shadow">
+            {previewText}
+            </div>
+        )}
         <div
           ref={containerRef}
           className={`relative rounded-full bg-surface-primary overflow-hidden ${isErrorFlashing ? "animate-shake" : ""}`}
@@ -611,7 +609,7 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
             height: PILL_HEIGHT,
             boxShadow: "0 8px 20px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.15), inset 0 -2px 5px rgba(0,0,0,0.8)",
           }}
-        >
+          >
           <canvas
             ref={canvasRef}
             className="absolute inset-0 w-full h-full block"
