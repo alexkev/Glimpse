@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useCallback, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
-import type { PillStatus, PillStatePayload, AudioSpectrumPayload } from "./types";
+import type { PillStatus, PillStatePayload, AudioSpectrumPayload, TranscriptionPreviewPayload } from "./types";
 
 interface GridInfo {
   spacing: number;
@@ -66,6 +66,7 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
   const [status, setStatus] = useState<PillStatus>("idle");
   const statusRef = useRef<PillStatus>("idle");
   const [isErrorFlashing, setIsErrorFlashing] = useState(false);
+  const [previewText, setPreviewText] = useState("");
 
   const getMaskOpacity = useCallback((x: number, y: number, width: number, height: number): number => {
     const radius = height / 2;
@@ -495,6 +496,7 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
         audioFrameCountRef.current = 0;
         heightsRef.current.fill(0);
         runAnimationRef.current("listening");
+        setPreviewText("");
       }
 
       statusRef.current = next;
@@ -502,18 +504,26 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
 
       if (next === "processing") {
         runAnimationRef.current("processing");
+        setPreviewText("");
       } else if (next === "error") {
         setIsErrorFlashing(true);
         runAnimationRef.current("error");
         setTimeout(() => setIsErrorFlashing(false), 1200);
+        setPreviewText("");
       } else if (next === "idle") {
         stopAllAnimationsRef.current();
         drawBaseDotsRef.current();
+        setPreviewText("");
       }
+    });
+
+    const unlistenPreviewPromise = listen<TranscriptionPreviewPayload>("transcription:preview", (e) => {
+        setPreviewText(e.payload.text);
     });
 
     return () => {
       unlistenPromise.then(unlisten => unlisten());
+      unlistenPreviewPromise.then(unlisten => unlisten());
       stopAllAnimationsRef.current();
     };
   }, []);
@@ -585,6 +595,13 @@ const PillOverlay: React.FC<PillOverlayProps> = ({
       <div className="sr-only" role="status" aria-live="polite">
         {getStatusMessage(status)}
       </div>
+      
+      {previewText && (
+        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-4 px-4 py-2 bg-surface-elevated/95 backdrop-blur-sm rounded-xl shadow-xl text-content-primary text-sm font-medium text-center pointer-events-none transition-all duration-200 ease-out animate-in fade-in slide-in-from-bottom-2 z-50 max-w-[280px]">
+          {previewText}
+        </div>
+      )}
+
       <div className="relative flex flex-col items-center pb-2">
         <div
           ref={containerRef}
