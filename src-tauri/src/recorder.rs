@@ -162,7 +162,7 @@ impl RecorderManager {
             .map_err(|err| anyhow!("Recorder not responding: {err}"))?
     }
 
-    pub fn snapshot(&self) -> Result<Option<(Vec<i16>, u32)>> {
+    pub fn snapshot(&self) -> Result<Option<(Vec<i16>, u32, u16)>> {
         let (respond_tx, respond_rx) = bounded(1);
         self.tx
             .send(RecorderCommand::Snapshot {
@@ -184,7 +184,7 @@ enum RecorderCommand {
         respond: Sender<Result<Option<CompletedRecording>>>,
     },
     Snapshot {
-        respond: Sender<Result<Option<(Vec<i16>, u32)>>>,
+        respond: Sender<Result<Option<(Vec<i16>, u32, u16)>>>,
     },
 }
 
@@ -336,10 +336,10 @@ impl RecorderCore {
         }
     }
 
-    fn snapshot(&self) -> Option<(Vec<i16>, u32)> {
+    fn snapshot(&self) -> Option<(Vec<i16>, u32, u16)> {
         if let Some(active) = &self.active {
             let samples = active.buffer.lock().clone();
-            Some((samples, active.sample_rate))
+            Some((samples, active.sample_rate, active.channels))
         } else {
             None
         }

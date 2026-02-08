@@ -160,9 +160,24 @@ impl PreviewEmitter {
                     break;
                 }
 
-                if let Ok(Some((samples, sample_rate))) = recorder.snapshot() {
-                    if samples.is_empty() {
+                if let Ok(Some((raw_samples, sample_rate, channels))) = recorder.snapshot() {
+                    if raw_samples.is_empty() {
                         continue;
+                    }
+
+                    // 1. Downmix to mono if needed
+                    let mut samples = if channels > 1 {
+                        crate::recorder::downmix_to_mono(&raw_samples, channels as usize)
+                    } else {
+                        raw_samples
+                    };
+
+                    // 2. Sliding window: Keep only the last 15 seconds of audio
+                    // This prevents the preview from lagging behind as recording grows
+                    const WINDOW_SECONDS: usize = 15;
+                    let max_samples = sample_rate as usize * WINDOW_SECONDS;
+                    if samples.len() > max_samples {
+                        samples = samples[samples.len() - max_samples..].to_vec();
                     }
 
                     let state = app.state::<AppState>();
